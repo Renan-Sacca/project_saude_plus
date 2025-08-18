@@ -1,6 +1,5 @@
-// src/pages/Profile.tsx
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext'; // CAMINHO ATUALIZADO
 import { useNavigate } from 'react-router-dom';
 
 interface UserProfile {
@@ -10,7 +9,7 @@ interface UserProfile {
   picture?: string;
   locale?: string;
   verified_email?: boolean;
-  exp?: number; // Data de expiração do JWT (timestamp)
+  exp?: number;
 }
 
 const Profile: React.FC = () => {
@@ -19,10 +18,12 @@ const Profile: React.FC = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
-    if (!token || hasFetched) return;
+    if (!token) {
+        setLoading(false);
+        return;
+    };
 
     const fetchProfile = async () => {
       try {
@@ -30,8 +31,10 @@ const Profile: React.FC = () => {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (response.status === 401) {
-          setError('Token inválido ou expirado.');
+        if (!response.ok) {
+          // Se o token for inválido no backend (expirado, etc), faz logout
+          logout();
+          navigate('/login');
           return;
         }
 
@@ -40,13 +43,12 @@ const Profile: React.FC = () => {
       } catch (err: any) {
         setError(err.message);
       } finally {
-        setHasFetched(true);
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, [token, hasFetched]);
+  }, [token, logout, navigate]);
 
   const handleLogout = () => {
     logout();
@@ -65,8 +67,8 @@ const Profile: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-red-50">
         <h2 className="text-lg text-red-700">Erro: {error}</h2>
-        <button 
-          onClick={handleLogout} 
+        <button
+          onClick={handleLogout}
           className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
           Voltar para Home
         </button>
@@ -74,19 +76,19 @@ const Profile: React.FC = () => {
     );
   }
 
-  if (!user) return null;
+  if (!user) return <p>Nenhum usuário logado.</p>;
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-blue-50 to-gray-100 p-6">
       <div className="bg-white shadow-lg rounded-2xl p-6 max-w-md w-full text-center">
         {user.picture && (
-          <img 
-            src={user.picture} 
-            alt="Foto de perfil" 
-            className="w-24 h-24 rounded-full mx-auto mb-4 shadow-md border border-gray-200" 
+          <img
+            src={user.picture}
+            alt="Foto de perfil"
+            className="w-24 h-24 rounded-full mx-auto mb-4 shadow-md border border-gray-200"
           />
         )}
-        <h1 className="text-2xl font-bold mb-2">{user.name || 'Usuário Google'}</h1>
+        <h1 className="text-2xl font-bold mb-2">{user.name || 'Usuário'}</h1>
 
         <p className="text-gray-700 mb-1"><strong>ID:</strong> {user.user_id}</p>
         <p className="text-gray-700 mb-1"><strong>Email:</strong> {user.email}</p>
@@ -107,8 +109,8 @@ const Profile: React.FC = () => {
           </p>
         )}
 
-        <button 
-          onClick={handleLogout} 
+        <button
+          onClick={handleLogout}
           className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition">
           Sair
         </button>

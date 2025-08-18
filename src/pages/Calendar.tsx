@@ -1,6 +1,6 @@
 // src/pages/Calendar.tsx
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from '../context/AuthContext'; 
 import { v4 as uuidv4 } from "uuid"; // npm install uuid
 
 interface CalendarEvent {

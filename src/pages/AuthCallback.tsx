@@ -1,7 +1,7 @@
 // src/pages/AuthCallback.tsx
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext'; 
 
 const AuthCallback: React.FC = () => {
   const { login } = useAuth();

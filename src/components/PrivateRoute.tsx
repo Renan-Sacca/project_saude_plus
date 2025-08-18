@@ -1,7 +1,6 @@
-// src/components/PrivateRoute.tsx
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext'; // CAMINHO ATUALIZADO
 
 interface PrivateRouteProps {
   children: React.ReactElement;
@@ -12,7 +11,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
 
   if (!isAuthenticated) {
     // Redireciona para a página inicial se não estiver autenticado
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;

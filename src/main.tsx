@@ -1,4 +1,3 @@
-// src/main.tsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {
@@ -11,53 +10,59 @@ import App from './App';
 import Home from './pages/Home';
 import AuthCallback from './pages/AuthCallback';
 import Profile from './pages/Profile';
-import Calendar from './pages/Calendar'; // ✅ Import da nova página
+import Calendar from './pages/Calendar';
 import PrivateRoute from './components/PrivateRoute';
+import RegisterPage from './pages/RegisterPage';
+import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
-import './index.css'; // ✅ Tailwind v4
+// Importação do AuthProvider
+import { AuthProvider } from './context/AuthContext';
 
-// Definição das rotas
+import './index.css';
+
+// Definição das rotas (sem alteração aqui)
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />,
-    children: [
-      {
-        index: true,
-        element: <Home />,
-      },
-      {
-        path: 'auth/callback',
-        element: <AuthCallback />,
-      },
-      {
-        path: 'profile',
-        element: (
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: 'calendar', // ✅ Nova rota protegida
-        element: (
-          <PrivateRoute>
-            <Calendar />
-          </PrivateRoute>
-        ),
-      },
-    ],
-  },
-  {
-    path: '*',
-    element: <h1>404: Página Não Encontrada</h1>,
-  }
+    {
+      path: '/',
+      element: <App />,
+      children: [
+        { index: true, element: <Home /> },
+        { path: 'login', element: <LoginPage /> },
+        { path: 'register', element: <RegisterPage /> },
+        { path: 'forgot-password', element: <ForgotPasswordPage /> },
+        { path: 'reset-password/:token', element: <ResetPasswordPage /> },
+        { path: 'auth/callback', element: <AuthCallback /> },
+        {
+          path: 'profile',
+          element: (
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          ),
+        },
+        {
+          path: 'calendar',
+          element: (
+            <PrivateRoute>
+              <Calendar />
+            </PrivateRoute>
+          ),
+        },
+      ],
+    },
+    {
+      path: '*',
+      element: <h1>404: Página Não Encontrada</h1>,
+    }
 ]);
 
 // Renderização do app
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>
 );
-``
