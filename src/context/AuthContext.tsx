@@ -1,57 +1,77 @@
-import React, { createContext, useState, useContext, useMemo, ReactNode, useEffect } from 'react';
-// Nenhuma importação de 'useAuth' ou de './AuthContext' deve existir aqui!
+import React, { createContext, useState, useContext, useMemo, ReactNode, useEffect } from 'react'
 
-// 1. Definir o tipo do valor que o contexto irá fornecer
+type User = { email: string }
+
 interface AuthContextType {
-  token: string | null;
-  isAuthenticated: boolean;
-  login: (newToken: string) => void;
-  logout: () => void;
+  user: User | null
+  token: string | null
+  isAuthenticated: boolean
+  loading: boolean
+  loginWithGoogle: () => void
+  loginWithToken: (newToken: string) => void
+  logout: () => Promise<void>
+  refresh: () => Promise<void>
 }
 
-// 2. Criar o Contexto com um valor padrão
-// O "!" é um non-null assertion, dizendo ao TypeScript que vamos prover um valor.
-const AuthContext = createContext<AuthContextType>(null!);
+const AuthContext = createContext<AuthContextType>(null!)
 
-// 3. Criar o "Provedor" (AuthProvider)
-// Este componente irá conter o estado e a lógica
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  // Efeito para inicializar o token a partir do localStorage ao carregar a app
-  useEffect(() => {
-    const storedToken = localStorage.getItem('jwt_token');
-    if (storedToken) {
-      setToken(storedToken);
+  const refresh = async () => {
+    try {
+      const r = await fetch('/api/me', { credentials: 'include' })
+      if (!r.ok) throw new Error(await r.text())
+      const data = await r.json()
+      if (data?.email) setUser({ email: data.email })
+      else setUser(null)
+    } catch {
+      setUser(null)
+    } finally {
+      setLoading(false)
     }
-  }, []);
+  }
 
-  const login = (newToken: string) => {
-    localStorage.setItem('jwt_token', newToken);
-    setToken(newToken);
-  };
+  useEffect(() => {
+    const storedToken = localStorage.getItem('jwt_token')
+    if (storedToken) setToken(storedToken)
+    refresh()
+  }, [])
 
-  const logout = () => {
-    localStorage.removeItem('jwt_token');
-    setToken(null);
-  };
+  // >>> ROTA NOVA via proxy do Vite
+  const loginWithGoogle = () => {
+    window.location.href = '/api/auth/google/login'
+  }
 
-  // Memoizar o valor para evitar re-renderizações desnecessárias
+  const loginWithToken = (newToken: string) => {
+    localStorage.setItem('jwt_token', newToken)
+    setToken(newToken)
+  }
+
+  const logout = async () => {
+    try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }) } catch {}
+    localStorage.removeItem('jwt_token')
+    setToken(null)
+    setUser(null)
+  }
+
   const value = useMemo(
     () => ({
+      user,
       token,
-      isAuthenticated: !!token,
-      login,
+      isAuthenticated: !!user || !!token,
+      loading,
+      loginWithGoogle,
+      loginWithToken,
       logout,
+      refresh,
     }),
-    [token]
-  );
+    [user, token, loading]
+  )
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
 
-// 4. Criar e exportar o Hook customizado `useAuth`
-// A exportação acontece aqui no final do arquivo, depois que tudo foi definido.
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext)

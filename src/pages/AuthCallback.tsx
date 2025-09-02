@@ -1,29 +1,31 @@
-// src/pages/AuthCallback.tsx
-import React, { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
 
-const AuthCallback: React.FC = () => {
-  const { login } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+export default function AuthCallback() {
+  const navigate = useNavigate()
+  const { refresh } = useAuth()
+  const [msg, setMsg] = useState('Finalizando login…')
 
   useEffect(() => {
-    // 🔹 Extrai token JWT enviado pelo backend
-    const params = new URLSearchParams(location.search);
-    const token = params.get('token');
-
-    if (token) {
-      login(token);  // salva no localStorage
-      navigate('/profile', { replace: true }); // redireciona para perfil
-    } else {
-      // 🔹 Se não há token, volta para home
-      console.error("Nenhum token recebido no callback.");
-      navigate('/', { replace: true });
+    const run = async () => {
+      try {
+        await refresh()
+        setMsg('Login concluído! Redirecionando…')
+        navigate('/', { replace: true })
+      } catch {
+        setMsg('Erro ao finalizar login. Tente novamente.')
+        navigate('/login', { replace: true })
+      }
     }
-  }, [location, login, navigate]);
+    run()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  return <div>✅ Autenticando com o Google, aguarde...</div>;
-};
-
-export default AuthCallback;
+  return (
+    <div className="p-6 max-w-lg mx-auto">
+      <h1 className="text-xl font-bold mb-2">Autenticando…</h1>
+      <p className="text-gray-600">{msg}</p>
+    </div>
+  )
+}
