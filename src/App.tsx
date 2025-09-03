@@ -1,3 +1,4 @@
+// src/App.tsx
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useState } from 'react'
@@ -7,12 +8,9 @@ export default function App() {
   const [loggingOut, setLoggingOut] = useState(false)
   const navigate = useNavigate()
 
-  const linkBase =
-    'px-4 py-2 rounded-xl transition font-medium'
-  const linkInactive =
-    'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-  const linkActive =
-    'bg-blue-600 text-white shadow'
+  const linkBase = 'px-4 py-2 rounded-xl transition font-medium'
+  const linkInactive = 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+  const linkActive = 'bg-blue-600 text-white shadow'
 
   const handleLogout = async () => {
     try {

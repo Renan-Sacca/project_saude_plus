@@ -1,3 +1,4 @@
+// src/main.tsx
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
@@ -12,6 +13,7 @@ import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import ProfessionalPage from './pages/Professional' // NOVA PÁGINA
 
 import { AuthProvider } from './context/AuthContext'
 import './index.css'
@@ -27,6 +29,8 @@ const router = createBrowserRouter([
       { path: 'forgot-password', element: <ForgotPasswordPage /> },
       { path: 'reset-password/:token', element: <ResetPasswordPage /> },
       { path: 'auth/callback', element: <AuthCallback /> },
+      // NOVA ROTA DE DETALHE DO PROFISSIONAL
+      { path: 'p/:id', element: <ProfessionalPage /> },
       {
         path: 'profile',
         element: (
